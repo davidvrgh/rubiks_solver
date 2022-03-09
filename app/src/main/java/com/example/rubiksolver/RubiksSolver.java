@@ -19,10 +19,10 @@ public class RubiksSolver {
     final static int BLUE = 5;
     final static int ORANGE = 6;
 
-    final static List<Node> MASTER_LIST = new ArrayList<Node>(){
+    final static List<Node> MASTER_LIST = new ArrayList<Node>() {
         @Override
         public boolean add(Node node) {
-            Log.e(TAG, "Adding node ,Size : " + size());
+            //Log.e(TAG, "Adding node ,Size : " + size());
             return super.add(node);
         }
     };
@@ -72,9 +72,9 @@ public class RubiksSolver {
 
 
     private static void findSolution(Node start, int recursionStage) {
-        printNode(start);
+        //printNode(start);
         int nextStage = recursionStage + 1;
-        Log.e(TAG, "recursion : " + recursionStage);
+        //Log.e(TAG, "recursion : " + recursionStage);
         if (isDesiredOutputReached(start)) {
             Log.e(TAG, "got desired output");
             return;
@@ -133,23 +133,65 @@ public class RubiksSolver {
 
     public static List<Node> getAllNextCombinations(Node start) {
         List<Node> list = new ArrayList<>();
+        int highestRank = -1;
         Node bottom = applyMovement(start, Movement.BOTTOM);
-        if (bottom != null) {
-            list.add(bottom);
+        int bottomRank = getRank(bottom);
+        if (bottomRank > highestRank) {
+            highestRank = bottomRank;
         }
         Node top = applyMovement(start, Movement.TOP);
-        if (top != null) {
-            list.add(top);
+        int topRank = getRank(top);
+        if (topRank > highestRank) {
+            highestRank = topRank;
         }
         Node right = applyMovement(start, Movement.RIGHT);
-        if (right != null) {
-            list.add(right);
+        int rightRank = getRank(right);
+        if (rightRank > highestRank) {
+            highestRank = rightRank;
         }
         Node left = applyMovement(start, Movement.LEFT);
-        if (left != null) {
+        int leftRank = getRank(left);
+        if (leftRank > highestRank) {
+            highestRank = leftRank;
+        }
+        if (bottom != null && highestRank == bottomRank) {
+            list.add(bottom);
+        }
+        if (top != null && highestRank == topRank) {
+            list.add(top);
+        }
+        if (right != null && highestRank == rightRank) {
+            list.add(right);
+        }
+        if (left != null && highestRank == leftRank) {
             list.add(left);
         }
         return list;
+    }
+
+
+    public static int getRank(Node node) {
+        if (node == null) {
+            return -1;
+        }
+        int rank = 0;
+        int[][] currentState = node.array;
+        int startRow = 1;
+        int endRow = 3;
+        int startColumn = 1;
+        int endColumn = 3;
+        for (int i = startRow; i <= endRow; i++) {
+            for (int j = startColumn; j <= endColumn; j++) {
+                if (currentState[i][j] == DESIRED_OUTPUT[i - 1][j - 1]) {
+                    rank++;
+                }
+            }
+        }
+        Log.e(TAG, "Rank : " + rank);
+        if (rank == 8) {
+            printNode(node);
+        }
+        return rank;
     }
 
     public static Node applyMovement(Node node, Movement movement) {
@@ -200,6 +242,7 @@ public class RubiksSolver {
                     return null;
                 } else {
                     copyNode.array[rowIdBlank][columnIdBlank] = copyNode.array[rowIdBlank + 1][columnIdBlank];
+                    copyNode.array[rowIdBlank + 1][columnIdBlank] = BLANK;
                 }
                 break;
         }
