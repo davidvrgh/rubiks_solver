@@ -1,7 +1,6 @@
 package com.example.rubiksolver;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +26,8 @@ public class RubiksSolver {
         }
     };
 
+    final static boolean[][] STATUS = new boolean[5][5];
+
     final static int[][] DESIRED_OUTPUT = new int[][]{{RED, GREEN, BLUE},
             {BLUE, ORANGE, RED},
             {BLUE, RED, RED}};
@@ -37,6 +38,7 @@ public class RubiksSolver {
             {GREEN, GREEN, BLUE, ORANGE, ORANGE},
             {BLUE, BLUE, BLUE, ORANGE, ORANGE}};
 
+
     public static void main(String args[]) {
         MASTER_LIST.clear();
         Node node = new Node();
@@ -45,13 +47,6 @@ public class RubiksSolver {
         int recursionStage = 0;
         findSolution(node, recursionStage);
         Log.e(TAG, "Exiting");
-        /*Node copy = getCopy(node);
-        copy.array[0][0] = 10;
-        if (copy.equals(node)) {
-            Log.e(TAG, "Equal");
-        } else {
-            Log.e(TAG, "Not Equal");
-        }*/
     }
 
     private static boolean isDesiredOutputReached(Node node) {
@@ -71,8 +66,11 @@ public class RubiksSolver {
     }
 
 
+    private static int mRecursionStage;
+
     private static void findSolution(Node start, int recursionStage) {
         //printNode(start);
+        mRecursionStage = recursionStage;
         int nextStage = recursionStage + 1;
         //Log.e(TAG, "recursion : " + recursionStage);
         if (isDesiredOutputReached(start)) {
@@ -83,9 +81,23 @@ public class RubiksSolver {
         for (Node combination : nextCombinations) {
             if (!MASTER_LIST.contains(combination)) {
                 MASTER_LIST.add(combination);
+                registerChangeInPosiion(start);
                 findSolution(combination, nextStage);
+                registerChangeInPosiion(start);
             }
         }
+    }
+
+    private static void printStatus() {
+        int count = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (STATUS[i][j]) {
+                    count++;
+                }
+            }
+        }
+        Log.e(TAG, " Status same count : " + count);
     }
 
     private static void printNode(Node node) {
@@ -187,11 +199,34 @@ public class RubiksSolver {
                 }
             }
         }
-        Log.e(TAG, "Rank : " + rank);
-        if (rank == 8) {
+        if (rank >= 6) {
+            Log.e(TAG, "Rank : " + rank + " Recursion stage : " + mRecursionStage);
             printNode(node);
         }
         return rank;
+    }
+
+
+    private static boolean IsThisPositionSet(int row, int column) {
+        return STATUS[row][column];
+    }
+
+    private static void registerChangeInPosiion(Node node) {
+        int[][] currentState = node.array;
+        int startRow = 1;
+        int endRow = 3;
+        int startColumn = 1;
+        int endColumn = 3;
+        for (int i = startRow; i <= endRow; i++) {
+            for (int j = startColumn; j <= endColumn; j++) {
+                if (currentState[i][j] == DESIRED_OUTPUT[i - 1][j - 1]) {
+                    STATUS[i - 1][j - 1] = true;
+                }else {
+                    STATUS[i - 1][j - 1] = false;
+                }
+            }
+        }
+        printStatus();
     }
 
     public static Node applyMovement(Node node, Movement movement) {
@@ -216,6 +251,8 @@ public class RubiksSolver {
             case LEFT:
                 if (columnIdBlank == 0) {
                     return null;
+                } else if (IsThisPositionSet(rowIdBlank, columnIdBlank - 1)) {
+                    return null;
                 } else {
                     copyNode.array[rowIdBlank][columnIdBlank] = copyNode.array[rowIdBlank][columnIdBlank - 1];
                     copyNode.array[rowIdBlank][columnIdBlank - 1] = BLANK;
@@ -223,6 +260,8 @@ public class RubiksSolver {
                 break;
             case RIGHT:
                 if (columnIdBlank == 4) {
+                    return null;
+                } else if (IsThisPositionSet(rowIdBlank, columnIdBlank + 1)) {
                     return null;
                 } else {
                     copyNode.array[rowIdBlank][columnIdBlank] = copyNode.array[rowIdBlank][columnIdBlank + 1];
@@ -232,6 +271,8 @@ public class RubiksSolver {
             case TOP:
                 if (rowIdBlank == 0) {
                     return null;
+                } else if (IsThisPositionSet(rowIdBlank - 1, columnIdBlank)) {
+                    return null;
                 } else {
                     copyNode.array[rowIdBlank][columnIdBlank] = copyNode.array[rowIdBlank - 1][columnIdBlank];
                     copyNode.array[rowIdBlank - 1][columnIdBlank] = BLANK;
@@ -239,6 +280,8 @@ public class RubiksSolver {
                 break;
             case BOTTOM:
                 if (rowIdBlank == 4) {
+                    return null;
+                } else if (IsThisPositionSet(rowIdBlank + 1, columnIdBlank)) {
                     return null;
                 } else {
                     copyNode.array[rowIdBlank][columnIdBlank] = copyNode.array[rowIdBlank + 1][columnIdBlank];
@@ -279,7 +322,7 @@ public class RubiksSolver {
             //boolean isEqual = Arrays.equals(array, node.array);
             boolean isEqual = equal(array, node.array);
             if (isEqual) {
-                Log.e(TAG, "equals");
+                //Log.e(TAG, "equals");
             }
             return isEqual;
         }
