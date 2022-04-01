@@ -70,6 +70,7 @@ public class RubiksSolver {
 
     private static void findSolution(Node start, int recursionStage) {
         //printNode(start);
+        printNode(start);
         mRecursionStage = recursionStage;
         int nextStage = recursionStage + 1;
         //Log.e(TAG, "recursion : " + recursionStage);
@@ -89,6 +90,11 @@ public class RubiksSolver {
     }
 
     private static void printStatus() {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         int count = 0;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -97,29 +103,45 @@ public class RubiksSolver {
                 }
             }
         }
-        Log.e(TAG, " Status same count : " + count);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            stringBuilder.append("\n");
+            for (int j = 0; j < 5; j++) {
+                stringBuilder.append(STATUS[i][j]);
+                stringBuilder.append("   ");
+            }
+        }
+        Log.e(TAG, " Status " + "\n");
+        Log.e(TAG, stringBuilder.toString());
     }
 
     private static void printNode(Node node) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         StringBuilder stringBuilder = new StringBuilder();
-        int startRow = 1;
-        int endRow = 3;
-        int startColumn = 1;
-        int endColumn = 3;
+        int startRow = 0;
+        int endRow = 4;
+        int startColumn = 0;
+        int endColumn = 4;
+        stringBuilder.append("Node \n");
         for (int i = startRow; i <= endRow; i++) {
             for (int j = startColumn; j <= endColumn; j++) {
-                stringBuilder.append(getColor(node.array[i][j]) + " ");
+                stringBuilder.append(getColor(node.array[i][j]) + "   ");
             }
+            stringBuilder.append("\n");
         }
         String log = stringBuilder.toString();
-        Log.e(TAG, "Node : " + log);
-        stringBuilder.delete(0, log.length() - 1);
+        Log.e(TAG, log);
+        /*stringBuilder.delete(0, log.length() - 1);
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 stringBuilder.append(getColor(DESIRED_OUTPUT[i][j]) + " ");
             }
         }
-        Log.e(TAG, "Desired Node : " + stringBuilder.toString());
+        Log.e(TAG, "Desired Node : " + stringBuilder.toString());*/
     }
 
     private static String getColor(int value) {
@@ -199,10 +221,6 @@ public class RubiksSolver {
                 }
             }
         }
-        if (rank >= 6) {
-            Log.e(TAG, "Rank : " + rank + " Recursion stage : " + mRecursionStage);
-            printNode(node);
-        }
         return rank;
     }
 
@@ -220,13 +238,13 @@ public class RubiksSolver {
         for (int i = startRow; i <= endRow; i++) {
             for (int j = startColumn; j <= endColumn; j++) {
                 if (currentState[i][j] == DESIRED_OUTPUT[i - 1][j - 1]) {
-                    STATUS[i - 1][j - 1] = true;
-                }else {
-                    STATUS[i - 1][j - 1] = false;
+                    STATUS[i][j] = true;
+                } else {
+                    STATUS[i][j] = false;
                 }
             }
         }
-        printStatus();
+        //printStatus();
     }
 
     public static Node applyMovement(Node node, Movement movement) {
